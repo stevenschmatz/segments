@@ -2,7 +2,7 @@
  * Segments Watchface
  * Steven Schmatz, 2015
  *
- * Segments counts time in short, 6 minute segments.
+ * Segments counts time downwards in short, 6 minute segments.
  * Two progress indicator circles chase around the clock,
  * one for the segment time and one for the progress of the day.
  */
@@ -14,9 +14,17 @@
 #define MIN_PER_SEGMENT 6
 #define COUNT_UP false
 
-#define BACKGROUND_COLOR GColorPictonBlue
-#define CIRCLE_COLOR GColorWhite
-#define TEXT_COLOR GColorWhite
+#ifdef PBL_PLATFORM_BASALT
+    #define BACKGROUND_COLOR GColorPictonBlue
+    #define CIRCLE_COLOR GColorWhite
+    #define TEXT_COLOR GColorWhite
+    #define FONT FONT_KEY_LECO_42_NUMBERS
+#else
+    #define BACKGROUND_COLOR GColorWhite
+    #define CIRCLE_COLOR GColorBlack
+    #define TEXT_COLOR GColorBlack
+    #define FONT FONT_KEY_BITHAM_42_BOLD
+#endif
 
 #define SECONDS_PER_MINUTE 60
 #define SECONDS_PER_HOUR 3600
@@ -150,7 +158,7 @@ static void main_window_load(Window *window) {
     text_layer_set_text(time_layer, "0");
 
     // Improve the layout to be more like a watchface
-    text_layer_set_font(time_layer, fonts_get_system_font(FONT_KEY_LECO_42_NUMBERS));
+    text_layer_set_font(time_layer, fonts_get_system_font(FONT));
     text_layer_set_text_alignment(time_layer, GTextAlignmentCenter);
 
     // Add it as a child layer to the Window's root layer
