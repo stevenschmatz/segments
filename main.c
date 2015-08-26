@@ -88,10 +88,10 @@ static void render_update_proc(Layer *layer, GContext* ctx) {
                                  t->tm_sec;
 
     unsigned int segment_angle = (total_seconds % (MIN_PER_SEGMENT * SECONDS_PER_MINUTE)) * (360.0 / (MIN_PER_SEGMENT * SECONDS_PER_MINUTE));
-//     unsigned int total_angle = total_seconds / 240.0;
+    unsigned int total_angle = total_seconds / 240.0;
 
     draw_progress_circle(layer, ctx, 55, 3, segment_angle, false);
-    draw_progress_circle(layer, ctx, 50, 3, 50, true);
+    draw_progress_circle(layer, ctx, 50, 3, total_angle, true);
 
     set_time_label(t);
 }
