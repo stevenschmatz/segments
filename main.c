@@ -1,22 +1,23 @@
 #include "pebble.h"
 
-#define BACKGROUND_COLOR GColorFromRGB(0, 179, 219)
+#define BACKGROUND_COLOR GColorFromHEX(0x1E90FF)
+#define COUNT_UP false
 
 static const GPathInfo MINUTE_SEGMENT_PATH_POINTS = {
-    3,
-    (GPoint[]) {
+    .num_points = 3,
+    .points = (GPoint[]) {
         {0, 0},
-        {-6, -58}, // 80 = radius + fudge; 8 = 80*tan(6 degrees); 6 degrees per minute;
-        {6,  -58},
+        {-3, -62}, // 58 = radius + fudge; 1 = 80*tan(1.2 degrees); 1.2 degrees per second;
+        {3,  -62},
     }
 };
 
 static const GPathInfo HOUR_SEGMENT_PATH_POINTS = {
-    3,
-    (GPoint[]) {
+    .num_points = 3,
+    .points = (GPoint[]) {
         {0, 0},
-        {-6, -58}, // 80 = radius + fudge; 8 = 80*tan(6 degrees); 6 degrees per minute;
-        {6,  -58},
+        {-3, -56}, // 40 = radius + fudge; 1 = 80*tan(6 degrees); 6 degrees per second;
+        {3,  -56},
     }
 };
 
@@ -25,33 +26,49 @@ static TextLayer *s_time_layer;
 static Layer *s_minute_display_layer, *s_hour_display_layer;
 static GPath *s_minute_segment_path, *s_hour_segment_path;
 
+/**
+ * Sets the center time label.
+ *
+ * @param t
+ */
+static void set_time_label(struct tm *t) {
+    int block_number;
+    if (COUNT_UP) {
+        block_number = (t->tm_hour * 12) + (t->tm_min / 5);
+    } else {
+        block_number = 288 - ((t->tm_hour * 12) + (t->tm_min / 5));
+    }
+
+    // Create a long-lived buffer
+    static char buffer[] = "0";
+    snprintf(buffer, 4, "%d", block_number);
+
+    // Display this time on the TextLayer
+    text_layer_set_text(s_time_layer, buffer);
+}
+
+
 static void minute_display_update_proc(Layer *layer, GContext* ctx) {
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
 
     unsigned int total_seconds = t->tm_hour * 3600 + t->tm_min * 60 + t->tm_sec;
-    unsigned int angle = (total_seconds % 300) * 360 / 300;
+    unsigned int angle = (total_seconds % 300) * 360.0 / 300.0;
 
     GRect bounds = layer_get_bounds(layer);
     GPoint center = grect_center_point(&bounds);
     graphics_context_set_fill_color(ctx, GColorWhite);
-    graphics_fill_circle(ctx, center, 55);
+    graphics_fill_circle(ctx, center, 60);
     graphics_context_set_fill_color(ctx, BACKGROUND_COLOR);
 
-    for(; angle < 355; angle += 6) {
-        gpath_rotate_to(s_minute_segment_path, (TRIG_MAX_ANGLE / 360) * angle);
+    for(; angle < 360; angle += 1) {
+        gpath_rotate_to(s_minute_segment_path, (TRIG_MAX_ANGLE / 360.0) * angle);
         gpath_draw_filled(ctx, s_minute_segment_path);
     }
 
-    graphics_fill_circle(ctx, center, 50);
+    graphics_fill_circle(ctx, center, 55);
 
-    // Create a long-lived buffer
-    static char buffer[] = "0";
-    int block_number = (t->tm_hour * 12) + (t->tm_min / 5);
-    snprintf(buffer, 4, "%d", block_number);
-
-    // Display this time on the TextLayer
-    text_layer_set_text(s_time_layer, buffer);
+    set_time_label(t);
 }
 
 static void hour_display_update_proc(Layer *layer, GContext* ctx) {
@@ -59,20 +76,20 @@ static void hour_display_update_proc(Layer *layer, GContext* ctx) {
     struct tm *t = localtime(&now);
 
     unsigned int total_seconds = t->tm_hour * 3600 + t->tm_min * 60 + t->tm_sec;
-    unsigned int angle = total_seconds / 240;
+    unsigned int angle = total_seconds / 240.0;
 
     GRect bounds = layer_get_bounds(layer);
     GPoint center = grect_center_point(&bounds);
     graphics_context_set_fill_color(ctx, GColorWhite);
-    graphics_fill_circle(ctx, center, 49);
+    graphics_fill_circle(ctx, center, 54);
     graphics_context_set_fill_color(ctx, BACKGROUND_COLOR);
 
-    for(; angle < 355; angle += 6) {
-        gpath_rotate_to(s_hour_segment_path, (TRIG_MAX_ANGLE / 360) * angle);
+    for(; angle < 360; angle += 1) {
+        gpath_rotate_to(s_hour_segment_path, (TRIG_MAX_ANGLE / 360.0) * angle);
         gpath_draw_filled(ctx, s_hour_segment_path);
     }
 
-    graphics_fill_circle(ctx, center, 45);
+    graphics_fill_circle(ctx, center, 50);
 }
 
 static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
