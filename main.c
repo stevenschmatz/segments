@@ -1,6 +1,9 @@
 #include "pebble.h"
 
-#define BACKGROUND_COLOR GColorFromHEX(0x1E90FF)
+#define BACKGROUND_COLOR GColorPictonBlue
+#define CIRCLE_COLOR GColorWhite
+#define TEXT_COLOR GColorWhite
+
 #define COUNT_UP false
 
 static const GPathInfo MINUTE_SEGMENT_PATH_POINTS = {
@@ -57,8 +60,8 @@ static void minute_display_update_proc(Layer *layer, GContext* ctx) {
 
     GRect bounds = layer_get_bounds(layer);
     GPoint center = grect_center_point(&bounds);
-    graphics_context_set_fill_color(ctx, GColorWhite);
-    graphics_fill_circle(ctx, center, 60);
+    graphics_context_set_fill_color(ctx, CIRCLE_COLOR);
+    graphics_fill_circle(ctx, center, 58);
     graphics_context_set_fill_color(ctx, BACKGROUND_COLOR);
 
     for(; angle < 360; angle += 1) {
@@ -80,8 +83,8 @@ static void hour_display_update_proc(Layer *layer, GContext* ctx) {
 
     GRect bounds = layer_get_bounds(layer);
     GPoint center = grect_center_point(&bounds);
-    graphics_context_set_fill_color(ctx, GColorWhite);
-    graphics_fill_circle(ctx, center, 54);
+    graphics_context_set_fill_color(ctx, CIRCLE_COLOR);
+    graphics_fill_circle(ctx, center, 53);
     graphics_context_set_fill_color(ctx, BACKGROUND_COLOR);
 
     for(; angle < 360; angle += 1) {
@@ -118,7 +121,7 @@ static void main_window_load(Window *window) {
         // Create time TextLayer
     s_time_layer = text_layer_create(GRect(0, 55, 144, 50));
     text_layer_set_background_color(s_time_layer, GColorClear);
-    text_layer_set_text_color(s_time_layer, GColorWhite);
+    text_layer_set_text_color(s_time_layer, TEXT_COLOR);
     text_layer_set_text(s_time_layer, "0");
 
     // Improve the layout to be more like a watchface
